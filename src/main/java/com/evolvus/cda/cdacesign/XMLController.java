@@ -1,6 +1,10 @@
 package com.evolvus.cda.cdacesign;
 
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.InputStream;
+import java.net.URL;
 import java.security.KeyPair;
 import java.security.MessageDigest;
 import java.text.SimpleDateFormat;
@@ -9,6 +13,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Random;
 
+import org.apache.commons.io.FileUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -46,13 +51,14 @@ public class XMLController {
 	private String responseSigType;
 
 	@RequestMapping(value = "/CDACREQ", method = RequestMethod.POST)
-	public ResponseEntity<String> returnXml(@RequestParam("aadharNum") String aadharNumber) throws FileNotFoundException {
+	public ResponseEntity<String> returnXml(@RequestParam("aadharNum") String aadharNumber)
+			throws FileNotFoundException {
 		String signedXml = null;
 		Map<String, Object> valueMap = new HashMap<>();
 		String reqXml = Pain009Request.Pain009;
 		XmlStrSubstitutor sub = new XmlStrSubstitutor(valueMap);
 		String xmlInput = sub.replace(reqXml);
-
+		InputStream inputStream = null;
 		// ResponseEntity<ResponseJson> resEntity = new
 		// ResponseEntity<ResponseJson>(HttpStatus.OK);
 		// ResponseJson res = new ResponseJson();
@@ -91,8 +97,15 @@ public class XMLController {
 			sub = new XmlStrSubstitutor(valueMap);
 			String cdacRequestedxml = sub.replace(cdacRequestStringUnsiged);
 
+			File file = new File("/tmp/privateKeyData");
+			FileUtils.copyURLToFile(
+					new URL("https://s3-eu-west-1.amazonaws.com/mobilehubproject-hosting-mobilehub-776545955/privateKeyData"),
+					file);
+			
+			inputStream = new FileInputStream(file);
+
 			KeyExtractor keyExtractor = new KeyExtractor();
-			KeyPair keypair = keyExtractor.extractKeysFromStream();
+			KeyPair keypair = keyExtractor.extractKeysFromStream(inputStream);
 			System.out.println("the private key :::::::" + keypair.getPrivate());
 			CreateSignature createSignature = new CreateSignature();
 			String xmlString = "Hi thsi  is nagendra";
@@ -103,7 +116,7 @@ public class XMLController {
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-		return new ResponseEntity<String>(signedXml,HttpStatus.OK);
+		return new ResponseEntity<String>(signedXml, HttpStatus.OK);
 
 	}
 

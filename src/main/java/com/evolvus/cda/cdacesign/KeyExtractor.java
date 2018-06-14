@@ -29,11 +29,11 @@ public class KeyExtractor {
 	 * extract certificate from file system
  	 * @throws FileNotFoundException 
 	 */
-	public KeyPair extractKeysFromStream() throws FileNotFoundException {
+	public KeyPair extractKeysFromStream(InputStream inputStream) throws FileNotFoundException {
                 Security.addProvider(new BouncyCastleProvider());
 		KeyPair keyPair = null;
-		File file = new File("/home/mahanteshm/Documents/SSL/privateKeyData");
-		InputStream inputStream = new FileInputStream(file);
+		//File file = new File("/home/mahanteshm/Documents/SSL/privateKeyData");
+		//InputStream inputStream = new FileInputStream(file);
 		
 		//InputStream inputStream = KeyExtractor.class.getResourceAsStream("privateKeyData");
 		InputStreamReader reader = new InputStreamReader(inputStream);
